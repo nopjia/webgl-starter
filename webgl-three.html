@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Three.js Example</title>
+</head>
+
+<body>
+  <canvas id="mycanvas" width="600" height="400"></canvas>
+</body>
+
+<script src="three.js"></script>
+
+<script>
+
+var init = function() {
+
+  // init renderer
+  var canvas = document.getElementById("mycanvas");
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas });
+  renderer.setSize(canvas.width, canvas.height);
+
+  // init scene
+  var scene = new THREE.Scene();
+
+  // init camera
+  var camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 0.1, 1000);
+  camera.position.z = 5;
+
+  // init box mesh
+  var geometry = new THREE.BoxGeometry(1, 1, 1);
+  var material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+  var mesh = new THREE.Mesh(geometry, material);
+
+  // add to scene
+  scene.add(mesh);
+
+  // update loop
+  var update = function() {
+    requestAnimationFrame(update);
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.04;
+    renderer.render( scene, camera );
+  };
+  update();
+
+};
+
+init();
+
+</script>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pure WebGL Example</title>
+</head>
+
+<body>
+  <canvas id="mycanvas" width="600" height="400"></canvas>
+</body>
+
+<script src="gl-matrix.js"></script>
+
+<script>
+
+var init = function() {
+
+  // INIT GL CONTEXT
+
+  var canvas = document.getElementById("mycanvas");
+  var gl;
+  try {
+    gl = canvas.getContext("webgl");
+  } catch (e) {
+    console.error(e);
+  }
+  if (!gl) {
+    console.error("WebGL initialization failed");
+    return false;
+  }
+
+
+  // SETUP GL VARIABLES
+
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.enable(gl.DEPTH_TEST);
+
+
+  // SETUP BUFFERS
+
+  var vertexArray = new Float32Array([
+     0.0,  1.0, 0.0,
+    -1.0, -1.0, 0.0,
+     1.0, -1.0, 0.0,
+  ]);
+  var vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, vertexArray, gl.STATIC_DRAW);
+
+
+  // SETUP SHADERS
+
+  var vsScript = [
+    "attribute vec3 aPosition;",
+    "uniform mat4 uModelMatrix;",
+    "uniform mat4 uViewMatrix;",
+    "uniform mat4 uProjMatrix;",
+    "void main(void) {",
+    "  gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);",
+    "}",
+  ].join("\n");
+
+  var fsScript = [
+    "void main(void) {",
+    "  gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);",
+    "}",
+  ].join("\n");
+
+  // compile vertex shader
+  var vsShader = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(vsShader, vsScript);
+  gl.compileShader(vsShader);
+  if (!gl.getShaderParameter(vsShader, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(vsShader));
+    return false;
+  }
+
+  // compile fragment shader
+  var fsShader = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(fsShader, fsScript);
+  gl.compileShader(fsShader);
+  if (!gl.getShaderParameter(fsShader, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(fsShader));
+    return false;
+  }
+
+  // link shaders
+  var shaderProgram = gl.createProgram();
+  gl.attachShader(shaderProgram, vsShader);
+  gl.attachShader(shaderProgram, fsShader);
+  gl.linkProgram(shaderProgram);
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    console.error("Link shaders failed");
+    return false;
+  }
+
+
+  // DRAW
+
+  // create matrices
+  var modelMat = mat4.create();
+  var viewMat = mat4.create();
+  var projMat = mat4.create();
+  mat4.lookAt(viewMat, [0, 0, -5], [0, 0, 0], [0, 1, 0]);
+  mat4.perspective(projMat, 45.0, canvas.width / canvas.height, 0.1, 100.0);
+
+  // get shader locations (pointers)
+  var uModelMatrix = gl.getUniformLocation(shaderProgram, "uModelMatrix");
+  var uViewMatrix = gl.getUniformLocation(shaderProgram, "uViewMatrix");
+  var uProjMatrix = gl.getUniformLocation(shaderProgram, "uProjMatrix");
+  var aPosition = gl.getAttribLocation(shaderProgram, "aPosition");
+
+  var draw = function() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.useProgram(shaderProgram);
+
+    // update uniforms
+    gl.uniformMatrix4fv(uModelMatrix, false, modelMat);
+    gl.uniformMatrix4fv(uViewMatrix, false, viewMat);
+    gl.uniformMatrix4fv(uProjMatrix, false, projMat);
+
+    gl.enableVertexAttribArray(aPosition);
+
+    // bind vertex buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+
+    // finally, draw!
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // clean up
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.disableVertexAttribArray(aPosition);
+    gl.useProgram(null);
+  };
+
+
+  // UPDATE LOOP
+
+  var update = function() {
+    requestAnimationFrame(update);
+    mat4.rotateY(modelMat, modelMat, 0.1);
+    draw();
+  };
+  update();
+
+};
+
+init();
+
+</script>
+</html>

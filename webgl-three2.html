@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Three.js Example</title>
+</head>
+
+<body>
+  <canvas id="mycanvas" width="600" height="400"></canvas>
+</body>
+
+<script src="three.js"></script>
+
+<script>
+
+var init = function() {
+
+  // init renderer
+  var canvas = document.getElementById("mycanvas");
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas });
+  renderer.setSize(canvas.width, canvas.height);
+
+  // scene
+  var scene = new THREE.Scene();
+
+  // camera
+  var camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 0.1, 1000);
+  camera.position.z = 50;
+
+  // light
+  var directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  directionalLight.position.set(1, 1, 1);
+  scene.add( directionalLight );
+
+  // mesh
+  var geometry = new THREE.TorusKnotGeometry(10, 2, 256, 16, 2, 7);
+  var material = new THREE.MeshPhongMaterial({ color: 0x88aaff });
+  var mesh = new THREE.Mesh(geometry, material);
+  scene.add(mesh);
+
+  // update loop
+  var update = function() {
+    requestAnimationFrame(update);
+    mesh.rotation.y += 0.03;
+    renderer.render( scene, camera );
+  };
+  update();
+
+};
+
+init();
+
+</script>
+</html>
