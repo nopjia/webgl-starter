@@ -94,6 +94,12 @@ var init = function() {
     return false;
   }
 
+  // delete shaders
+  gl.detachShader(shaderProgram, vsShader);
+  gl.detachShader(shaderProgram, fsShader);
+  gl.deleteShader(vsShader);
+  gl.deleteShader(fsShader);
+
 
   // DRAW
 
