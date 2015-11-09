@@ -39,9 +39,15 @@ var init = function() {
   // SETUP BUFFERS
 
   var vertexArray = new Float32Array([
+    // positions
      0.0,  1.0, 0.0,
     -1.0, -1.0, 0.0,
      1.0, -1.0, 0.0,
+
+    // colors
+    1.0, 0.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
   ]);
   var vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -51,18 +57,24 @@ var init = function() {
   // SETUP SHADERS
 
   var vsScript = [
+    "precision mediump float;",
     "attribute vec3 aPosition;",
+    "attribute vec4 aColor;",
+    "varying vec4 vColor;",
     "uniform mat4 uModelMatrix;",
     "uniform mat4 uViewMatrix;",
     "uniform mat4 uProjMatrix;",
     "void main(void) {",
+    "  vColor = aColor;",
     "  gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);",
     "}",
   ].join("\n");
 
   var fsScript = [
+    "precision mediump float;",
+    "varying vec4 vColor;",
     "void main(void) {",
-    "  gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);",
+    "  gl_FragColor = vColor;",
     "}",
   ].join("\n");
 
@@ -115,6 +127,7 @@ var init = function() {
   var uViewMatrix = gl.getUniformLocation(shaderProgram, "uViewMatrix");
   var uProjMatrix = gl.getUniformLocation(shaderProgram, "uProjMatrix");
   var aPosition = gl.getAttribLocation(shaderProgram, "aPosition");
+  var aColor = gl.getAttribLocation(shaderProgram, "aColor");
 
   var draw = function() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -127,10 +140,12 @@ var init = function() {
     gl.uniformMatrix4fv(uProjMatrix, false, projMat);
 
     gl.enableVertexAttribArray(aPosition);
+    gl.enableVertexAttribArray(aColor);
 
     // bind vertex buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(aColor, 4, gl.FLOAT, false, 0, 36);
 
     // finally, draw!
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -138,6 +153,7 @@ var init = function() {
     // clean up
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.disableVertexAttribArray(aPosition);
+    gl.disableVertexAttribArray(aColor);
     gl.useProgram(null);
   };
 
